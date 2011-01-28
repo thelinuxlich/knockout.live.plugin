@@ -7,6 +7,8 @@ Files:
 Dependencies:
 - Jquery 1.4.2+
 - Knockout HEAD
+- Socket.io client
+- Node.js and socket.io on the server side
 
 Steps to see it happen:
 - Clone the repo

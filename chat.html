@@ -11,17 +11,17 @@
   <body>
     <script>
       var VM = {
-        mensagens: KO([]).live("VM.mensagens"),
-        mensagem: KO("")
+        messages: KO([]).live("VM.messages"),
+        message: KO("")
       };
 
-      VM.mensagens_html = KO(function() { return VM.mensagens().join("")});
+      VM.messages_html = KO(function() { return VM.messages().join("")});
 
-      VM.mensagens.subscribe(function() { $('#chat').scrollTop = 1000000; });
+      VM.messages.subscribe(function() { $('#chat').scrollTop = 1000000; });
 
       VM.send = function(){
-        VM.mensagens.push("<em>"+VM.mensagem()+"<em><br/>");
-        VM.mensagem("");
+        VM.messages.push("<em>"+VM.message()+"<em><br/>");
+        VM.message("");
       };
 
       $(function() {
@@ -29,10 +29,10 @@
         ko.applyBindings(VM);
       });
     </script>
-    <h1>Chat Example using LiveViewModel</h1>
-    <div id="chat" data-bind="html: mensagens_html"></div>
+    <h1>Chat Example using Knockout Live Plugin</h1>
+    <div id="chat" data-bind="html: messages_html"></div>
     <form id="form" data-bind="submit: send">
-      <input type="text" autocomplete="off" id="text" data-bind="value: mensagem" /><input type="submit" value="Enviar">
+      <input type="text" autocomplete="off" id="text" data-bind="value: message" /><input type="submit" value="Send">
     </form>
     <style>
       #chat { height: 300px; overflow: auto; width: 800px; border: 1px solid #eee; font: 13px Helvetica, Arial; }
