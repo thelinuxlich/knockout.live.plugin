@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Simplest Chat Ever</title>
+    <script src="/json.js"></script> <!-- for ie -->
+    <script src="/knockout-latest.js"></script>
+    <script src="/jquery.js"></script>
+    <script src="/knockout.live.plugin.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+  </head>
+  <body>
+    <script>
+      var VM = {
+        mensagens: KO([]).live("VM.mensagens"),
+        mensagem: KO("")
+      };
+
+      VM.mensagens_html = KO(function() { return VM.mensagens().join("")});
+
+      VM.mensagens.subscribe(function() { $('#chat').scrollTop = 1000000; });
+
+      VM.send = function(){
+        VM.mensagens.push("<em>"+VM.mensagem()+"<em><br/>");
+        VM.mensagem("");
+      };
+
+      $(function() {
+        ko.utils.socketConnect(null,8080); //Always start the remote client before applying bindings
+        ko.applyBindings(VM);
+      });
+    </script>
+    <h1>Chat Example using LiveViewModel</h1>
+    <div id="chat" data-bind="html: mensagens_html"></div>
+    <form id="form" data-bind="submit: send">
+      <input type="text" autocomplete="off" id="text" data-bind="value: mensagem" /><input type="submit" value="Enviar">
+    </form>
+    <style>
+      #chat { height: 300px; overflow: auto; width: 800px; border: 1px solid #eee; font: 13px Helvetica, Arial; }
+      #chat p { padding: 8px; margin: 0; }
+      #chat p:nth-child(odd) { background: #F6F6F6; }
+      #form { width: 782px; background: #333; padding: 5px 10px; }
+      #form input[type=text] { width: 700px; padding: 5px; background: #fff; border: 1px solid #fff; }
+      #form input[type=submit] { cursor: pointer; background: #999; border: none; padding: 6px 8px; -moz-border-radius: 8px; -webkit-border-radius: 8px; margin-left: 5px; text-shadow: 0 1px 0 #fff; }
+      #form input[type=submit]:hover { background: #A2A2A2; }
+      #form input[type=submit]:active { position: relative; top: 2px; }
+    </style>
+  </body>
+</html>
+
