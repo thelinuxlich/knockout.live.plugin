@@ -1,6 +1,10 @@
+/** isArray helper */
+ko.isArray = function(obj) {
+    return toString.call(obj) === "[object Array]";
+}
 /** Syntactic sugar */
 var KO = function(value) {
-  if($.isArray(value) === true)
+  if(ko.isArray(value) === true)
     return ko.observableArray(value);
   else if(typeof value === "function") {
     if(arguments.length > 1)
@@ -53,7 +57,7 @@ Function.prototype.live = function(varname) {
   });
 
   //This is needed for observableArrays
-  if($.isArray(underlyingObservable()) === true) {
+  if(ko.isArray(underlyingObservable()) === true) {
       ko.utils.arrayForEach(["pop", "push", "reverse", "shift", "sort", "splice", "unshift"], function (methodName) {
           obs[methodName] = function () {
               var methodCallResult = underlyingObservable[methodName].apply(underlyingObservable(), arguments);

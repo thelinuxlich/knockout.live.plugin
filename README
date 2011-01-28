@@ -5,7 +5,6 @@ Files:
 - server.js running on node server
 
 Dependencies:
-- Jquery 1.4.2+
 - Knockout HEAD
 - Socket.io client
 - Node.js and socket.io on the server side
@@ -23,5 +22,4 @@ What do you need for your application to go "live"?:
 TODO:
 - Adapter interface for sync options besides socket.io
 - Handle complex observable objects
-- Remove jQuery dependency
 
