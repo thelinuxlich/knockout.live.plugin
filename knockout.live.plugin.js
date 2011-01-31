@@ -1,10 +1,10 @@
 /** isArray helper */
-ko.isArray = function(obj) {
+ko.utils.isArray = function(obj) {
     return toString.call(obj) === "[object Array]";
 }
 /** Syntactic sugar */
 var KO = function(value) {
-  if(ko.isArray(value) === true)
+  if(ko.utils.isArray(value) === true)
     return ko.observableArray(value);
   else if(typeof value === "function") {
     if(arguments.length > 1)
@@ -30,6 +30,9 @@ ko.utils.socketConnect = function(address,port) {
             temporaryViewModelField = window[obj_tree.splice(0,1)];
         for(var i = 0;i < obj_tree.length;i++) {
           temporaryViewModelField = temporaryViewModelField[obj_tree[i]];
+          if(i + 1 < obj_tree.length)
+              if(ko.isObservable(temporaryViewModelField))
+                temporaryViewModelField = temporaryViewModelField();
         }
         ko.utils.cachedVarnameReferences[obj.msg.varname] = temporaryViewModelField;
       }
@@ -57,7 +60,7 @@ Function.prototype.live = function(varname) {
   });
 
   //This is needed for observableArrays
-  if(ko.isArray(underlyingObservable()) === true) {
+  if(ko.utils.isArray(underlyingObservable()) === true) {
       ko.utils.arrayForEach(["pop", "push", "reverse", "shift", "sort", "splice", "unshift"], function (methodName) {
           obs[methodName] = function () {
               var methodCallResult = underlyingObservable[methodName].apply(underlyingObservable(), arguments);
