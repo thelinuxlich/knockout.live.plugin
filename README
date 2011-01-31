@@ -21,5 +21,3 @@ What do you need for your application to go "live"?:
 
 TODO:
 - Adapter interface for sync options besides socket.io
-- Handle complex observable objects
-
