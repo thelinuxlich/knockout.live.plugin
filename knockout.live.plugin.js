@@ -1,3 +1,14 @@
+/*!
+ * Knockout Live plugin
+ * http://github.com/thelinuxlich/knockout.live.plugin
+ *
+ * Copyright 2011, Alisson Cavalcante Agiani
+ * Licensed under the MIT license.
+ * http://github.com/thelinuxlich/knockout.live.plugin/MIT-LICENSE.txt
+ *
+ * Date: Mon Feb 01 09:00:29 2011 -0300
+*/
+
 /** isArray helper */
 ko.utils.isArray = function(obj) {
     return toString.call(obj) === "[object Array]";
