@@ -21,4 +21,6 @@ What do you need for your application to go "live"?:
 
 TODO:
 - Adapter interface for sync options besides socket.io
-
+- Generate UUID for live observables
+- Allow custom ID for live observables(so we can synchronize between whole different apps)
+- Readonly live observables
