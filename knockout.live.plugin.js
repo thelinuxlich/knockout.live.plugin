@@ -34,7 +34,15 @@ ko.utils.socketConnect = function(address,port) {
     ko.socket = new io.Socket(address, {port: port, rememberTransport: false});
     ko.socket.connect();
     ko.socket.on('message', function(obj){
-      ko.syncObjects["update_"+obj.id]({koValue: obj.value,sync: false});
+      // primitive server-side storage
+      if(obj.knockoutObjects !== undefined) {
+        for(var i in obj.knockoutObjects) {
+            if(obj.knockoutObjects.hasOwnProperty(i))
+                ko.syncObjects["update_"+i]({koValue: obj.knockoutObjects[i],sync: false});
+        }
+      } else {
+          ko.syncObjects["update_"+obj.id]({koValue: obj.value,sync: false});
+      }
     });
 };
 

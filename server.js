@@ -41,12 +41,17 @@ send404 = function(res){
 server.listen(8080);
 
 var io = io.listen(server)
-  , clients = [];
+  , clients = []
+  , syncObjs = {knockoutObjects: {}};
 //Be sure to send the message to everyone except the sender, otherwise we'll see recursion hell
 io.on('connection', function(client){
   clients.push(client);
+  // send all objects temporarily stored
+  client.send(syncObjs);
 
   client.on('message', function(message) {
+    // append sync values to temporary storage
+    syncObjs["knockoutObjects"][message.id] = message.value;
     for(var i=0; i < clients.length;i++ ) {
         if(clients[i].sessionId !== client.sessionId)
             clients[i].send(message); //this format is important(TODO: message object customization)
