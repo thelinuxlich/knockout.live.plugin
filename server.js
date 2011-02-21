@@ -49,7 +49,7 @@ io.on('connection', function(client){
   client.on('message', function(message) {
     for(var i=0; i < clients.length;i++ ) {
         if(clients[i].sessionId !== client.sessionId)
-            clients[i].send({msg: message}); //this format is important(TODO: message object customization)
+            clients[i].send(message); //this format is important(TODO: message object customization)
     }
   });
 

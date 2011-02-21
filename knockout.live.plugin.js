@@ -9,9 +9,12 @@
  * Date: Mon Feb 01 09:00:29 2011 -0300
 */
 
+/** Temporary values with unique IDs for syncable objects goes here */
+ko.syncObjects = {sequenceSyncID: 0};
+
 /** isArray helper */
 ko.utils.isArray = function(obj) {
-    return toString.call(obj) === "[object Array]";
+    return Array.isArray(obj) || toString.call(obj) === "[object Array]";
 }
 /** Syntactic sugar */
 var KO = function(value) {
@@ -26,34 +29,20 @@ var KO = function(value) {
     return ko.observable(value);
 };
 
-/** Cache to fasten varname searches */
-ko.utils.cachedVarnameReferences = {};
-
 /** Wraps socket.io client and messaging for knockout observables */
 ko.utils.socketConnect = function(address,port) {
     ko.socket = new io.Socket(address, {port: port, rememberTransport: false});
     ko.socket.connect();
     ko.socket.on('message', function(obj){
-      if(obj.msg.varname in ko.utils.cachedVarnameReferences) {
-        var temporaryViewModelField = ko.utils.cachedVarnameReferences[obj.msg.varname];
-      } else {
-        var obj_tree = obj.msg.varname.split("."),
-            temporaryViewModelField = window[obj_tree.splice(0,1)];
-        for(var i = 0;i < obj_tree.length;i++) {
-          temporaryViewModelField = temporaryViewModelField[obj_tree[i]];
-          if(i + 1 < obj_tree.length)
-              if(ko.isObservable(temporaryViewModelField))
-                temporaryViewModelField = temporaryViewModelField();
-        }
-        ko.utils.cachedVarnameReferences[obj.msg.varname] = temporaryViewModelField;
-      }
-      temporaryViewModelField({koValue: obj.msg.value,sync: false});
+      ko.syncObjects["update_"+obj.id]({koValue: obj.value,sync: false});
     });
 };
 
 /** Custom writable dependent observable that handles synchronizing with node server */
 Function.prototype.live = function(varname) {
   var underlyingObservable = this;
+  var tempID = ko.syncObjects.sequenceSyncID + 1;
+  ko.syncObjects.sequenceSyncID = tempID;
 
   var obs = ko.dependentObservable({
           read: underlyingObservable,
@@ -62,10 +51,10 @@ Function.prototype.live = function(varname) {
                 underlyingObservable(value.koValue);
               } else if(typeof value === "object" && value.koValue !== undefined){
                 underlyingObservable(value.koValue);
-                ko.socket.send({varname: varname,value: value.koValue});
+                ko.socket.send({id: tempID,value: value.koValue});
               } else {
                 underlyingObservable(value);
-                ko.socket.send({varname: varname,value: value});
+                ko.socket.send({id: tempID,value: value});
               }
           }
   });
@@ -75,7 +64,7 @@ Function.prototype.live = function(varname) {
       ko.utils.arrayForEach(["pop", "push", "reverse", "shift", "sort", "splice", "unshift"], function (methodName) {
           obs[methodName] = function () {
               var methodCallResult = underlyingObservable[methodName].apply(underlyingObservable(), arguments);
-              ko.socket.send({varname: varname,value: underlyingObservable()});
+              ko.socket.send({id: tempID,value: underlyingObservable()});
               underlyingObservable.valueHasMutated();
               return methodCallResult;
           };
@@ -98,7 +87,7 @@ Function.prototype.live = function(varname) {
                   removedValues.push(value);
           }
           underlyingObservable(remainingValues);
-          ko.socket.send({varname: varname,value: underlyingObservable()});
+          ko.socket.send({id: tempID,value: underlyingObservable()});
           return removedValues;
       };
 
@@ -107,7 +96,7 @@ Function.prototype.live = function(varname) {
           if (arrayOfValues === undefined) {
               var allValues = underlyingObservable();
               underlyingObservable([]);
-              ko.socket.send({varname: varname,value: underlyingObservable()});
+              ko.socket.send({id: tempID,value: underlyingObservable()});
               return allValues;
           }
 
@@ -117,7 +106,7 @@ Function.prototype.live = function(varname) {
           var elements = underlyingObservable.remove(function (value) {
               return ko.utils.arrayIndexOf(arrayOfValues, value) >= 0;
           });
-          ko.socket.send({varname: varname,value: underlyingObservable()});
+          ko.socket.send({id: tempID,value: underlyingObservable()});
           return elements;
       };
 
@@ -129,14 +118,14 @@ Function.prototype.live = function(varname) {
                   underlyingObservable()[i]["_destroy"] = true;
           }
           underlyingObservable.valueHasMutated();
-          ko.socket.send({varname: varname,value: underlyingObservable()});
+          ko.socket.send({id: tempID,value: underlyingObservable()});
       };
 
       obs.destroyAll = function (arrayOfValues) {
           // If you passed zero args, we destroy everything
           if (arrayOfValues === undefined) {
               var result = underlyingObservable.destroy(function() { return true });
-              ko.socket.send({varname: varname,value: underlyingObservable()});
+              ko.socket.send({id: tempID,value: underlyingObservable()});
               return result;
           }
           // If you passed an arg, we interpret it as an array of entries to destroy
@@ -145,7 +134,7 @@ Function.prototype.live = function(varname) {
           var result = underlyingObservable.destroy(function (value) {
               return ko.utils.arrayIndexOf(arrayOfValues, value) >= 0;
           });
-          ko.socket.send({varname: varname,value: underlyingObservable()});
+          ko.socket.send({id: tempID,value: underlyingObservable()});
           return result;
       };
 
@@ -159,10 +148,18 @@ Function.prototype.live = function(varname) {
           if (index >= 0) {
               underlyingObservable()[index] = newItem;
               underlyingObservable.valueHasMutated();
-              ko.socket.send({varname: varname,value: underlyingObservable()});
+              ko.socket.send({id: tempID,value: underlyingObservable()});
           }
       };
   }
+
+  /** Let's eat our own dog food now */
+
+  ko.syncObjects["update_"+tempID] = KO("");
+  ko.syncObjects["update_"+tempID].subscribe(function(value) {
+     obs(value);
+  });
+
   return obs;
 };
 
