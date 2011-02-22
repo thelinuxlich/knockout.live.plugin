@@ -49,7 +49,7 @@ ko.utils.socketConnect = function(address,port) {
 /** Custom writable dependent observable that handles synchronizing with node server */
 Function.prototype.live = function(options) {
   var underlyingObservable = this;
-  if(options["id"] === undefined || options["id"] === null) {
+  if(options === undefined || options["id"] === undefined || options["id"] === null) {
     var tempID = ko.syncObjects.sequenceSyncID + 1;
     ko.syncObjects.sequenceSyncID = tempID;
     tempID = "ko_update_"+tempID;

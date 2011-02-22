@@ -52,7 +52,7 @@ io.on('connection', function(client){
   client.on('message', function(message) {
     // append sync values to temporary storage
     syncObjs["knockoutObjects"][message.id] = message.value;
-    for(var i=0; i < clients.length;i++ ) {
+    for(var i=0,j=clients.length; i < j;i++ ) {
         if(clients[i].sessionId !== client.sessionId)
             clients[i].send(message); 
     }
