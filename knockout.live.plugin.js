@@ -38,19 +38,24 @@ ko.utils.socketConnect = function(address,port) {
       if(obj.knockoutObjects !== undefined) {
         for(var i in obj.knockoutObjects) {
             if(obj.knockoutObjects.hasOwnProperty(i))
-                ko.syncObjects["update_"+i]({koValue: obj.knockoutObjects[i],sync: false});
+                ko.syncObjects[i]({koValue: obj.knockoutObjects[i],sync: false});
         }
       } else {
-          ko.syncObjects["update_"+obj.id]({koValue: obj.value,sync: false});
+          ko.syncObjects[obj.id]({koValue: obj.value,sync: false});
       }
     });
 };
 
 /** Custom writable dependent observable that handles synchronizing with node server */
-Function.prototype.live = function(varname) {
+Function.prototype.live = function(options) {
   var underlyingObservable = this;
-  var tempID = ko.syncObjects.sequenceSyncID + 1;
-  ko.syncObjects.sequenceSyncID = tempID;
+  if(options["id"] === undefined || options["id"] === null) {
+    var tempID = ko.syncObjects.sequenceSyncID + 1;
+    ko.syncObjects.sequenceSyncID = tempID;
+    tempID = "ko_update_"+tempID;
+  } else {
+    var tempID = options["id"];
+  }  
 
   var obs = ko.dependentObservable({
           read: underlyingObservable,
@@ -163,8 +168,8 @@ Function.prototype.live = function(varname) {
 
   /** Let's eat our own dog food now */
 
-  ko.syncObjects["update_"+tempID] = KO("");
-  ko.syncObjects["update_"+tempID].subscribe(function(value) {
+  ko.syncObjects[tempID] = KO("");
+  ko.syncObjects[tempID].subscribe(function(value) {
      obs(value);
   });
 

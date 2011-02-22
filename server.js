@@ -54,7 +54,7 @@ io.on('connection', function(client){
     syncObjs["knockoutObjects"][message.id] = message.value;
     for(var i=0; i < clients.length;i++ ) {
         if(clients[i].sessionId !== client.sessionId)
-            clients[i].send(message); //this format is important(TODO: message object customization)
+            clients[i].send(message); 
     }
   });
 

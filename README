@@ -19,8 +19,9 @@ What do you need for your application to go "live"?:
 - Set .live() on all ko.observable() and ko.observableArray() you want to synchronize remotely(see the chat example)
 - Run ko.utils.socketConnect(address,port) before ko.applyBindings()
 
+Options for live():
+- id: "foo" will set a custom ID for sync purposes. This is useful if you are syncing between different apps.
+
 TODO:
 - Adapter interface for sync options besides socket.io
-- Generate UUID for live observables
-- Allow custom ID for live observables(so we can synchronize between whole different apps)
 - Readonly live observables
