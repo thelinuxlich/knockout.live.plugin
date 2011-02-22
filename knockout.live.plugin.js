@@ -38,37 +38,42 @@ ko.utils.socketConnect = function(address,port) {
       if(obj.knockoutObjects !== undefined) {
         for(var i in obj.knockoutObjects) {
             if(obj.knockoutObjects.hasOwnProperty(i))
-                ko.syncObjects[i]({koValue: obj.knockoutObjects[i],sync: false});
+                ko.syncObjects[i]({value: obj.knockoutObjects[i],sync: false});
         }
       } else {
-          ko.syncObjects[obj.id]({koValue: obj.value,sync: false});
+          ko.syncObjects[obj.id]({value: obj.value,sync: false});
       }
     });
 };
 
 /** Custom writable dependent observable that handles synchronizing with node server */
 Function.prototype.live = function(options) {
-  var underlyingObservable = this;
-  if(options === undefined || options["id"] === undefined || options["id"] === null) {
-    var tempID = ko.syncObjects.sequenceSyncID + 1;
+  var underlyingObservable = this,
+      options = options || {readonly: false},
+      tempID = null,
+      readonly = options["readonly"];
+  if(options["id"] === undefined || options["id"] === null) {
+    tempID = ko.syncObjects.sequenceSyncID + 1;
     ko.syncObjects.sequenceSyncID = tempID;
     tempID = "ko_update_"+tempID;
   } else {
-    var tempID = options["id"];
+    tempID = options["id"];
   }  
 
   var obs = ko.dependentObservable({
           read: underlyingObservable,
           write: function(value) {
-              if(typeof value === "object" && value.sync === false && value.koValue !== undefined) {
-                underlyingObservable(value.koValue);
-              } else if(typeof value === "object" && value.koValue !== undefined){
-                underlyingObservable(value.koValue);
-                ko.socket.send({id: tempID,value: value.koValue});
-              } else {
-                underlyingObservable(value);
-                ko.socket.send({id: tempID,value: value});
-              }
+              if(readonly === false) {
+                if(typeof value === "object" && value.sync === false && value.value !== undefined) {
+                  underlyingObservable(value.value);
+                } else if(typeof value === "object" && value.value !== undefined){
+                  underlyingObservable(value.value);
+                  ko.socket.send({id: tempID,value: value.value});
+                } else {
+                  underlyingObservable(value);
+                  ko.socket.send({id: tempID,value: value});
+                }
+              }  
           }
   });
 
@@ -76,10 +81,12 @@ Function.prototype.live = function(options) {
   if(ko.utils.isArray(underlyingObservable()) === true) {
       ko.utils.arrayForEach(["pop", "push", "reverse", "shift", "sort", "splice", "unshift"], function (methodName) {
           obs[methodName] = function () {
-              var methodCallResult = underlyingObservable[methodName].apply(underlyingObservable(), arguments);
-              ko.socket.send({id: tempID,value: underlyingObservable()});
-              underlyingObservable.valueHasMutated();
-              return methodCallResult;
+              if(readonly === false) {
+                var methodCallResult = underlyingObservable[methodName].apply(underlyingObservable(), arguments);
+                ko.socket.send({id: tempID,value: underlyingObservable()});
+                underlyingObservable.valueHasMutated();
+                return methodCallResult;
+              }
           };
       });
 
@@ -88,67 +95,75 @@ Function.prototype.live = function(options) {
       };
 
       obs.remove = function (valueOrPredicate) {
-          var underlyingArray = underlyingObservable();
-          var remainingValues = [];
-          var removedValues = [];
-          var predicate = typeof valueOrPredicate == "function" ? valueOrPredicate : function (value) { return value === valueOrPredicate; };
-          for (var i = 0, j = underlyingArray.length; i < j; i++) {
-              var value = underlyingArray[i];
-              if (!predicate(value))
-                  remainingValues.push(value);
-              else
-                  removedValues.push(value);
-          }
-          underlyingObservable(remainingValues);
-          ko.socket.send({id: tempID,value: underlyingObservable()});
-          return removedValues;
+          if(readonly === false) {
+            var underlyingArray = underlyingObservable();
+            var remainingValues = [];
+            var removedValues = [];
+            var predicate = typeof valueOrPredicate == "function" ? valueOrPredicate : function (value) { return value === valueOrPredicate; };
+            for (var i = 0, j = underlyingArray.length; i < j; i++) {
+                var value = underlyingArray[i];
+                if (!predicate(value))
+                    remainingValues.push(value);
+                else
+                    removedValues.push(value);
+            }
+            underlyingObservable(remainingValues);
+            ko.socket.send({id: tempID,value: underlyingObservable()});
+            return removedValues;
+          }  
       };
 
       obs.removeAll = function (arrayOfValues) {
-          // If you passed zero args, we remove everything
-          if (arrayOfValues === undefined) {
-              var allValues = underlyingObservable();
-              underlyingObservable([]);
-              ko.socket.send({id: tempID,value: underlyingObservable()});
-              return allValues;
-          }
+          if(readonly === false) {
+            // If you passed zero args, we remove everything
+            if (arrayOfValues === undefined) {
+                var allValues = underlyingObservable();
+                underlyingObservable([]);
+                ko.socket.send({id: tempID,value: underlyingObservable()});
+                return allValues;
+            }
 
-          // If you passed an arg, we interpret it as an array of entries to remove
-          if (!arrayOfValues)
-              return [];
-          var elements = underlyingObservable.remove(function (value) {
-              return ko.utils.arrayIndexOf(arrayOfValues, value) >= 0;
-          });
-          ko.socket.send({id: tempID,value: underlyingObservable()});
-          return elements;
+            // If you passed an arg, we interpret it as an array of entries to remove
+            if (!arrayOfValues)
+                return [];
+            var elements = underlyingObservable.remove(function (value) {
+                return ko.utils.arrayIndexOf(arrayOfValues, value) >= 0;
+            });
+            ko.socket.send({id: tempID,value: underlyingObservable()});
+            return elements;
+          }  
       };
 
       obs.destroy = function (valueOrPredicate) {
-          var predicate = typeof valueOrPredicate == "function" ? valueOrPredicate : function (value) { return value === valueOrPredicate; };
-          for (var i = underlyingObservable().length - 1; i >= 0; i--) {
-              var value = underlyingObservable()[i];
-              if (predicate(value))
-                  underlyingObservable()[i]["_destroy"] = true;
-          }
-          underlyingObservable.valueHasMutated();
-          ko.socket.send({id: tempID,value: underlyingObservable()});
+          if(readonly === false) {
+            var predicate = typeof valueOrPredicate == "function" ? valueOrPredicate : function (value) { return value === valueOrPredicate; };
+            for (var i = underlyingObservable().length - 1; i >= 0; i--) {
+                var value = underlyingObservable()[i];
+                if (predicate(value))
+                    underlyingObservable()[i]["_destroy"] = true;
+            }
+            underlyingObservable.valueHasMutated();
+            ko.socket.send({id: tempID,value: underlyingObservable()});
+          }  
       };
 
       obs.destroyAll = function (arrayOfValues) {
-          // If you passed zero args, we destroy everything
-          if (arrayOfValues === undefined) {
-              var result = underlyingObservable.destroy(function() { return true });
-              ko.socket.send({id: tempID,value: underlyingObservable()});
-              return result;
-          }
-          // If you passed an arg, we interpret it as an array of entries to destroy
-          if (!arrayOfValues)
-              return [];
-          var result = underlyingObservable.destroy(function (value) {
-              return ko.utils.arrayIndexOf(arrayOfValues, value) >= 0;
-          });
-          ko.socket.send({id: tempID,value: underlyingObservable()});
-          return result;
+          if(readonly === false) {
+            // If you passed zero args, we destroy everything
+            if (arrayOfValues === undefined) {
+                var result = underlyingObservable.destroy(function() { return true });
+                ko.socket.send({id: tempID,value: underlyingObservable()});
+                return result;
+            }
+            // If you passed an arg, we interpret it as an array of entries to destroy
+            if (!arrayOfValues)
+                return [];
+            var result = underlyingObservable.destroy(function (value) {
+                return ko.utils.arrayIndexOf(arrayOfValues, value) >= 0;
+            });
+            ko.socket.send({id: tempID,value: underlyingObservable()});
+            return result;
+          }  
       };
 
       obs.indexOf = function (item) {
@@ -157,12 +172,14 @@ Function.prototype.live = function(options) {
       };
 
       obs.replace = function(oldItem, newItem) {
-          var index = underlyingObservable.indexOf(oldItem);
-          if (index >= 0) {
-              underlyingObservable()[index] = newItem;
-              underlyingObservable.valueHasMutated();
-              ko.socket.send({id: tempID,value: underlyingObservable()});
-          }
+          if(readonly === false) {
+            var index = underlyingObservable.indexOf(oldItem);
+            if (index >= 0) {
+                underlyingObservable()[index] = newItem;
+                underlyingObservable.valueHasMutated();
+                ko.socket.send({id: tempID,value: underlyingObservable()});
+            }
+          }  
       };
   }
 
@@ -170,7 +187,7 @@ Function.prototype.live = function(options) {
 
   ko.syncObjects[tempID] = KO("");
   ko.syncObjects[tempID].subscribe(function(value) {
-     obs(value);
+     readonly === false ? obs(value) : underlyingObservable(value);
   });
 
   return obs;

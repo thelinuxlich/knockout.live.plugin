@@ -20,8 +20,8 @@ What do you need for your application to go "live"?:
 - Run ko.utils.socketConnect(address,port) before ko.applyBindings()
 
 Options for live():
-- id: "foo" will set a custom ID for sync purposes. This is useful if you are syncing between different apps.
+- id: "my_id" sets a custom ID for sync purposes. This is useful if you are syncing between different apps.
+- readonly: true blocks all direct changes to the live observable. It will update only by socket messages from the server.
 
 TODO:
 - Adapter interface for sync options besides socket.io
-- Readonly live observables

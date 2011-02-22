@@ -51,6 +51,7 @@ io.on('connection', function(client){
 
   client.on('message', function(message) {
     // append sync values to temporary storage
+    // here you could block people trying to manually update via socket.send live readonly observables with named IDs
     syncObjs["knockoutObjects"][message.id] = message.value;
     for(var i=0,j=clients.length; i < j;i++ ) {
         if(clients[i].sessionId !== client.sessionId)
@@ -59,7 +60,7 @@ io.on('connection', function(client){
   });
 
   client.on('disconnect', function(){
-    for(var i=0; i < clients.length;i++ ) {
+    for(var i=0,j=clients.length; i < j;i++ ) {
         if(clients[i].sessionId == client.sessionId)
             clients.splice(i,1);
     }
