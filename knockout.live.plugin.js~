@@ -82,7 +82,7 @@ Function.prototype.live = function(options) {
           obs[methodName] = function () {
               if(readonly === false) {
                 var methodCallResult = underlyingObservable[methodName].apply(underlyingObservable(), arguments);
-                ko.socket.emit("message",{id: tempID,value: underlyingObservable()});
+                ko.socket.send({id: tempID,value: underlyingObservable()});
                 underlyingObservable.valueHasMutated();
                 return methodCallResult;
               }
@@ -107,7 +107,7 @@ Function.prototype.live = function(options) {
                     removedValues.push(value);
             }
             underlyingObservable(remainingValues);
-            ko.socket.emit("message",{id: tempID,value: underlyingObservable()});
+            ko.socket.send({id: tempID,value: underlyingObservable()});
             return removedValues;
           }  
       };
@@ -118,7 +118,7 @@ Function.prototype.live = function(options) {
             if (arrayOfValues === undefined) {
                 var allValues = underlyingObservable();
                 underlyingObservable([]);
-                ko.socket.emit("message",{id: tempID,value: underlyingObservable()});
+                ko.socket.send({id: tempID,value: underlyingObservable()});
                 return allValues;
             }
 
@@ -128,7 +128,7 @@ Function.prototype.live = function(options) {
             var elements = underlyingObservable.remove(function (value) {
                 return ko.utils.arrayIndexOf(arrayOfValues, value) >= 0;
             });
-            ko.socket.emit("message",{id: tempID,value: underlyingObservable()});
+            ko.socket.send({id: tempID,value: underlyingObservable()});
             return elements;
           }  
       };
@@ -142,7 +142,7 @@ Function.prototype.live = function(options) {
                     underlyingObservable()[i]["_destroy"] = true;
             }
             underlyingObservable.valueHasMutated();
-            ko.socket.emit("message",{id: tempID,value: underlyingObservable()});
+            ko.socket.send({id: tempID,value: underlyingObservable()});
           }  
       };
 
@@ -151,7 +151,7 @@ Function.prototype.live = function(options) {
             // If you passed zero args, we destroy everything
             if (arrayOfValues === undefined) {
                 var result = underlyingObservable.destroy(function() { return true });
-                ko.socket.emit("message",{id: tempID,value: underlyingObservable()});
+                ko.socket.send({id: tempID,value: underlyingObservable()});
                 return result;
             }
             // If you passed an arg, we interpret it as an array of entries to destroy
@@ -160,7 +160,7 @@ Function.prototype.live = function(options) {
             var result = underlyingObservable.destroy(function (value) {
                 return ko.utils.arrayIndexOf(arrayOfValues, value) >= 0;
             });
-            ko.socket.emit("message",{id: tempID,value: underlyingObservable()});
+            ko.socket.send({id: tempID,value: underlyingObservable()});
             return result;
           }  
       };
@@ -176,7 +176,7 @@ Function.prototype.live = function(options) {
             if (index >= 0) {
                 underlyingObservable()[index] = newItem;
                 underlyingObservable.valueHasMutated();
-                ko.socket.emit("message",{id: tempID,value: underlyingObservable()});
+                ko.socket.send({id: tempID,value: underlyingObservable()});
             }
           }  
       };
