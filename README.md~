@@ -5,7 +5,7 @@
 * server.js running on node server
 
 ## Dependencies:
-* Knockout 2.0+
+* Knockout HEAD
 * Socket.io client
 * Node.js and socket.io on the server side
 
