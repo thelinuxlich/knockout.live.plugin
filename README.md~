@@ -6,7 +6,7 @@
 
 ## Dependencies:
 * Knockout 2.0+
-* Socket.io client/server
+* Socket.io client
 * Node.js and socket.io on the server side
 
 ## Steps to see it happen:
