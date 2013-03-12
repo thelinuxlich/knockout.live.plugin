@@ -22,9 +22,9 @@ var KO = function(value) {
     return ko.observableArray(value);
   else if(typeof value === "function") {
     if(arguments.length > 1)
-        return ko.computed(value,arguments[1]);
+        return ko.dependentObservable(value,arguments[1]);
     else
-        return ko.computed(value);
+        return ko.dependentObservable(value);
   } else
     return ko.observable(value);
 };
@@ -59,7 +59,7 @@ Function.prototype.live = function(options) {
     tempID = options["id"];
   }  
 
-  var obs = ko.computed({
+  var obs = ko.dependentObservable({
           read: underlyingObservable,
           write: function(value) {
               if(readonly === false) {
