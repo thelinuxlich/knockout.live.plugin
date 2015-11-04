@@ -1,0 +1,9 @@
+{
+  "name": "knockout-live-plugin-demo",
+  "version": "0.1",
+  "description": "A Knockout plugin that syncs observable variables between all clients automatically",
+  "dependencies": {
+    "express": "^4.10.2",
+    "socket.io": "^1.3.7"
+  }
+}
