@@ -8,27 +8,7 @@
     <script src="/knockout.live.plugin.js"></script>
     <script src="/socket.io/socket.io.js"></script>
   </head>
-  <body>
-    <script>
-      var VM = {
-        messages: KO([]).live(),
-        message: KO("")
-      };
-
-      VM.messages_html = KO(function() { return VM.messages().join("")});
-
-      VM.messages.subscribe(function() { $('#chat').scrollTop = 1000000; });
-
-      VM.send = function(){
-        VM.messages.push("<em>"+VM.message()+"<em><br/>");
-        VM.message("");
-      };
-
-      $(function() {
-        ko.utils.socketConnect(null,8080); //Always start the remote client before applying bindings
-        ko.applyBindings(VM);
-      });
-    </script>
+  <body>    
     <h1>Chat Example using Knockout Live Plugin</h1>
     <div id="chat" data-bind="html: messages_html"></div>
     <form id="form" data-bind="submit: send">
