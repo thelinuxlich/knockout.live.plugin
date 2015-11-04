@@ -1,5 +1,11 @@
 # Knockout Live Plugin
 
+## Installation:
+* Clone the repository
+    npm install
+    node server.js
+* Visit index.html
+
 ## Files:
 * knockout.live.plugin.js on the client
 * server.js running on node server
