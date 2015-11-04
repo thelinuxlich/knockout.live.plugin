@@ -6,7 +6,7 @@ Clone the repository
     npm install
     node server.js
 
-Visit index.html
+Visit /index.html to see the example chat application.
 
 ## Files:
 * js/knockout.live.plugin.js on the client
