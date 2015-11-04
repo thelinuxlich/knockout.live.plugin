@@ -2,8 +2,10 @@
 
 ## Installation:
 * Clone the repository
+
     npm install
     node server.js
+
 * Visit index.html
 
 ## Files:
