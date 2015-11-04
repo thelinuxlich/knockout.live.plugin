@@ -1,32 +1,8 @@
-/*
-var VM = {
-  messages: KO([]).live(),
-  message: KO("")
-};
-
-VM.messages_html = KO(function() { return VM.messages().join("")});
-
-VM.messages.subscribe(function() { $('#chat').scrollTop = 1000000; });
-
-VM.send = function(){
-  VM.messages.push("<em>"+VM.message()+"<em><br/>");
-  VM.message("");
-};
-
-$(function() {
-  ko.utils.socketConnect(null,4000); //Always start the remote client before applying bindings
-  ko.applyBindings(VM);
-});
-
-*/
-
-
 jQuery(function ($) {
 
   var 
   port          = 4000,
   serverAddress = 'http://'+document.domain+':'+port;
-//  socket        = io.connect(serverAddress);
 
   /**
   *
@@ -50,7 +26,7 @@ jQuery(function ($) {
       $('#chat').scrollTop = 1000000;
     });
 
-    self.send = function(){
+    self.send = function() {
       self.messages.push("<em>"+self.message()+"<em><br/>");
       self.message("");
     };
@@ -58,11 +34,11 @@ jQuery(function ($) {
   } // ko
 
 
-  var hatchmodel = new AppViewModel();
+  var appmodel = new AppViewModel();
   
   ko.utils.socketConnect( serverAddress, port );
 
-  ko.applyBindings( hatchmodel );
+  ko.applyBindings( appmodel );
 
 
 }); // jQuery ends
