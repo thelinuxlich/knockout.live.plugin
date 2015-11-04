@@ -19,7 +19,7 @@ Visit /index.html to see the example chat application.
 * Node.js and socket.io on the server side
 
 ## Notes
-* The chat example run on port 4000, change js/main.js and server.js if required
+* The chat example runs on port 4000, change port variable in js/main.js and server.js if required
 * This example does not use node, you need a web server running on 80 like nginx or apache
 
 ## What do you need for your application to go "live"?:
