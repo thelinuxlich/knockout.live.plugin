@@ -1,9 +1,9 @@
 var app     = require('express')(),
-  http    = require('http').Server(app),
-  io      = require('socket.io')(http, {serveClient: false} ),
+  http      = require('http').Server(app),
+  io        = require('socket.io')(http, {serveClient: false} ),
   clients   = [],
   syncObjs  = {knockoutObjects: {}},
-  port    = 4000;
+  port      = 4000;
 
 http.listen( port, function(){
   console.log('listening on *:'+port);
