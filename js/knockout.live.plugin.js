@@ -15,7 +15,8 @@ ko.syncObjects = {sequenceSyncID: 0};
 /** isArray helper */
 ko.utils.isArray = function(obj) {
     return Array.isArray(obj) || toString.call(obj) === "[object Array]";
-}
+};
+
 /** Syntactic sugar */
 var KO = function(value) {
   if(ko.utils.isArray(value) === true)
@@ -47,16 +48,19 @@ ko.utils.socketConnect = function(address,port) {
 
 /** Custom writable dependent observable that handles synchronizing with node server */
 Function.prototype.live = function(options) {
+
   var underlyingObservable = this,
-      options = options || {readonly: false},
-      tempID = null,
-      readonly = options["readonly"];
-  if(options["id"] === undefined || options["id"] === null) {
+      tempID    = null;
+      options   = options ? options : {readonly: false},  
+      readonly  = options.readonly;
+  
+  
+  if(options.id === undefined || options.id === null) {
     tempID = ko.syncObjects.sequenceSyncID + 1;
     ko.syncObjects.sequenceSyncID = tempID;
     tempID = "ko_update_"+tempID;
   } else {
-    tempID = options["id"];
+    tempID = options.id;
   }  
 
   var obs = ko.computed({
@@ -76,7 +80,7 @@ Function.prototype.live = function(options) {
           }
   });
 
-  //This is needed for observableArrays
+  // This is needed for observableArrays
   if(ko.utils.isArray(underlyingObservable()) === true) {
       ko.utils.arrayForEach(["pop", "push", "reverse", "shift", "sort", "splice", "unshift"], function (methodName) {
           obs[methodName] = function () {
@@ -95,10 +99,13 @@ Function.prototype.live = function(options) {
 
       obs.remove = function (valueOrPredicate) {
           if(readonly === false) {
-            var underlyingArray = underlyingObservable();
-            var remainingValues = [];
-            var removedValues = [];
-            var predicate = typeof valueOrPredicate == "function" ? valueOrPredicate : function (value) { return value === valueOrPredicate; };
+            
+            var 
+              underlyingArray = underlyingObservable(),
+              remainingValues = [],
+              removedValues = [],
+              predicate = typeof valueOrPredicate == "function" ? valueOrPredicate : function (value) { return value === valueOrPredicate; };
+
             for (var i = 0, j = underlyingArray.length; i < j; i++) {
                 var value = underlyingArray[i];
                 if (!predicate(value))
@@ -106,8 +113,10 @@ Function.prototype.live = function(options) {
                 else
                     removedValues.push(value);
             }
+
             underlyingObservable(remainingValues);
             ko.socket.emit("message",{id: tempID,value: underlyingObservable()});
+            
             return removedValues;
           }  
       };
@@ -185,8 +194,13 @@ Function.prototype.live = function(options) {
   /** Let's eat our own dog food now */
 
   ko.syncObjects[tempID] = KO("");
+
   ko.syncObjects[tempID].subscribe(function(value) {
-     readonly === false ? obs(value) : underlyingObservable(value);
+    if ( readonly === false ) {
+      obs(value);
+    } else {
+      underlyingObservable(value);
+    }
   });
 
   return obs;
