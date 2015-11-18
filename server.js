@@ -12,28 +12,28 @@ http.listen( port, function(){
 
 io.on('connection', function(socket) {
 
-  clients.push(socket);
+  clients[socket.id] = socket;
 
   socket.emit("message",syncObjs);
 
   socket.on('message', function(message) {
     // append sync values to temporary storage
     // here you could block people trying to manually update via socket.send live readonly observables with named IDs
-    syncObjs['knockoutObjects'][message.id] = message.value;
-    for(var i=0,j=clients.length; i < j;i++ ) {
-        if(clients[i].id !== socket.id)
-            clients[i].emit("message",message); 
+    syncObjs.knockoutObjects[message.id] = message.value;
+    
+    for ( var client in clients ) {
+        if ( socket.id !== client ) {
+            io.to(client).emit("message", message);
+        }
     }
+
+    console.log( 'message sent to connected clients: ', Object.keys(clients), ' by: ', socket.id );
+
   });
 
   socket.on('disconnect', function(){
-      for(var i=0,j=clients.length; i < j;i++ ) {
-          if(!!clients[i]['id'])
-              if(clients[i].id == socket.id)
-                  clients.splice(i,1);
-      }
-        console.log(socket.id,'disconnected ------------- ');
-        console.log(clients);
+      delete clients[socket.id];
+      console.log('/// disconnected client /////////////>', socket.id);
   });
 
 });
