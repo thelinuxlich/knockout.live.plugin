@@ -1,4 +1,5 @@
-var app     = require('express')(),
+var 
+  app     = require('express')(),
   http      = require('http').Server(app),
   io        = require('socket.io')(http, {serveClient: false} ),
   clients   = [],
