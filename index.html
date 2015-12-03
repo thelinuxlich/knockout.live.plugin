@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+
+  <head>
+    <title>Simplest Chat Ever</title>
+    <link rel='stylesheet' href='/css/chat.css' type='text/css' media='all'/>
+  </head>
+
+  <body>    
+
+    <h1>Chat Example using Knockout Live Plugin</h1>
+
+    <div id="chat" data-bind="html: messages_html"></div>
+
+    <form id="form" data-bind="submit: send">
+      <input type="text" autocomplete="off" id="text" data-bind="value: message" /><input type="submit" value="Send">
+    </form>
+
+    <script src="js/knockout_v3.4.0.js"></script>
+    <script src="js/jquery.min.2.1.4.js"></script>    
+    <script src="js/knockout.live.plugin.js"></script>
+    <script src="js/socket.io_v1.3.7.js"></script>
+    <script src="js/main.js"></script>
+
+
+  <div>
+  <h2>Debug</h2>
+    <pre data-bind="text: ko.toJSON($data, null, 2)"></pre>
+  </div>
+
+
+  </body>
+
+</html>
+

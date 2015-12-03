@@ -1,0 +1,25 @@
+{
+  "name": "knockout-live-plugin-demo",
+  "version": "0.0.1",
+  "description": "A Knockout plugin that syncs observable variables between all clients automatically",
+  "dependencies": {
+    "express": "^4.10.2",
+    "socket.io": "^1.3.7"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/thelinuxlich/knockout.live.plugin"
+  },
+  "keywords": [
+    "node",
+    "knockout",
+    "knockoutjs",
+    "express"
+  ],
+  "author": "Alisson Cavalcante Agiani",
+  "contributors": [
+    "Alisson Cavalcante Agiani, (https://github.com/thelinuxlich)",
+    "Cenk Dolek <cdolek@projectinteractions.com> (https://github.com/cdolek)"
+  ],
+  "license": "MIT"
+}
